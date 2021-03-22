@@ -1,0 +1,49 @@
+Based on lock free sorted vector implement from class.
+
+There are 2 possible problems they may happen in lock-free code:
+- ABA
+- writer deleting data while reader is still reading
+
+The first problem may be "solved" by either delayed delete, or garbage collection - discussed in class. For this 
+assignment use garbage collection - MemoryBank.
+
+Second problem can be solved by reference counting as discussed in "cuj-2004-10.pdf".
+
+MemoryBank     
+
+ +--------------------------------------------------+
+ | +----+----+----+----+----+----+----+----+        |this
+ | |  | |    |    |    |    |    |    |    |        |memory
+ | +--+-+----+----+----+----+----+----+----+        |is 
+ |    |                                             |pre-allocated
+ |    V                                             |and
+ | +-------+                                        |managed
+ | |  |    |std::vector                             |by
+ | +--+----+                                        |MemoryBank
+ |    |                                             |
+ +----+---------------------------------------------+
+      | 
+      | the actual storage C++ array holding element of std::vector
+      V is dynamic - deleted when not needed
+   +---------------------------+
+   | 1 10 12 4 9 6 5 4 3 1 2 7 |
+   +---------------------------+
+
+
+Notes:
+
+1) memory bank using queue as discussed in class. You may use locks in the implementation
+    a) memory bank will handle "std::vector<int>*"
+    b) memory bank will handle "std::vector<int>" objects (sizeof(std::vector<int> about 24 bytes)
+    c) memory bank will NOT handle memory for the dynamically resizable arrays
+2) reference counting solution to the problem when readers (operator[]) use vector deleted by a writer (Insert)
+
+3) Older GNU may require compiler directive to stop ".load" from segfaulting.
+struct Pair {
+        std::vector<int>* pointer;
+        int               ref_count;
+}  __attribute__((aligned(16),packed));
+
+
+To submit:
+lfsv.h with all implementations AND comments. 
